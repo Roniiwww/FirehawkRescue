@@ -1,8 +1,9 @@
+// shared/schema.ts
 import { sql } from "drizzle-orm";
 import { pgTable, text, varchar, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+/** ---------- DRIZZLE TABLES (unchanged) ---------- */
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
@@ -26,31 +27,34 @@ export const bannedIps = pgTable("banned_ips", {
   bannedAt: timestamp("banned_at").defaultNow().notNull(),
 });
 
-export const insertUserSchema = createInsertSchema<typeof users>(users).pick({
-  username: true,
-  password: true,
+/** ---------- ZOD SCHEMAS FOR API/BUSINESS LOGIC ---------- */
+/* Use explicit zod objects instead of drizzle-zod picks,
+   to avoid “true → never” inference issues. */
+
+export const insertUserSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1),
 });
 
-export const insertContactMessageSchema = createInsertSchema<typeof contactMessages>(
-  contactMessages
-).pick({
-  name: true,
-  email: true,
-  subject: true,
-  message: true,
+export const insertContactMessageSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  subject: z.string().optional().nullable(),
+  message: z.string().min(1),
 });
 
-export const insertBannedIpSchema = createInsertSchema<typeof bannedIps>(bannedIps).pick({
-  ipAddress: true,
-  reason: true,
+export const insertBannedIpSchema = z.object({
+  ipAddress: z.string().min(1),
+  reason: z.string().optional().nullable(),
 });
 
+/** ---------- TYPES ---------- */
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
-
 export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
-export type ContactMessage = typeof contactMessages.$inferSelect;
-
 export type InsertBannedIp = z.infer<typeof insertBannedIpSchema>;
+
+/* Drizzle “select” types still work, if you need them */
+export type User = typeof users.$inferSelect;
+export type ContactMessage = typeof contactMessages.$inferSelect;
 export type BannedIp = typeof bannedIps.$inferSelect;
 
