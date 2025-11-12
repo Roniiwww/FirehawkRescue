@@ -15,7 +15,6 @@ app.use(express.urlencoded({ extended: true }));
 registerRoutes(app);
 
 app.use(express.static(path.join(__dirname, "dist/public")));
-
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "dist/public/index.html"));
 });
