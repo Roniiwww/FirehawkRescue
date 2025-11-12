@@ -26,26 +26,31 @@ export const bannedIps = pgTable("banned_ips", {
   bannedAt: timestamp("banned_at").defaultNow().notNull(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
+export const insertUserSchema = createInsertSchema<typeof users>(users).pick({
   username: true,
   password: true,
 });
 
-export const insertContactMessageSchema = createInsertSchema(contactMessages).pick({
+export const insertContactMessageSchema = createInsertSchema<typeof contactMessages>(
+  contactMessages
+).pick({
   name: true,
   email: true,
   subject: true,
   message: true,
 });
 
-export const insertBannedIpSchema = createInsertSchema(bannedIps).pick({
+export const insertBannedIpSchema = createInsertSchema<typeof bannedIps>(bannedIps).pick({
   ipAddress: true,
   reason: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
 export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
 export type ContactMessage = typeof contactMessages.$inferSelect;
+
 export type InsertBannedIp = z.infer<typeof insertBannedIpSchema>;
 export type BannedIp = typeof bannedIps.$inferSelect;
+
